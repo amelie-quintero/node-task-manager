@@ -1,4 +1,5 @@
 const Task = require("../models/Task");
+const Task = require("../models/Task");
 const { validateObjectId } = require("../utils/Validation");
 
 exports.getTask = async (req, res) => {
@@ -20,6 +21,19 @@ exports.getTask = async (req, res) => {
             res.status(400).json({status: false, msg: "No tasks found."});
         }
         res.status(200).json({task, status: true, msg: "Task found successfully."});
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({status: false, msg: "Internal Server Error."});
+    }
+}
+exports.postTask = async (req, res) => {
+    try {
+        const {description} = req.body;
+        if (!description) {
+            return res.status(400).json({status: false, msg: "Description of task not found."});
+        }
+        const task = await Task.create({user: req.user.id, description});
+        res.status(200).json({task, status: true, msg: "Task created successfully."});
     } catch (err) {
         console.error(err);
         return res.status(500).json({status: false, msg: "Internal Server Error."});
