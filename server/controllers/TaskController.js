@@ -4,6 +4,8 @@ const { validateObjectId } = require("../utils/Validation");
 
 const INTERNAL_SERVER_ERROR = "Internal Server Error.";
 const INVALID_TASK_ID = "Invalid task id.";
+const MISSING_TASK_DESC = "Task description not found.";
+const TASK_OWNED_BY_OTHER_USER = "Action rejected: task owned by another user.";
 
 exports.getTask = async (req, res) => {
     try {
@@ -33,7 +35,7 @@ exports.postTask = async (req, res) => {
     try {
         const {description} = req.body;
         if (!description) {
-            return res.status(400).json({status: false, msg: "Task description not found."});
+            return res.status(400).json({status: false, msg: MISSING_TASK_DESC});
         }
         const task = await Task.create({user: req.user.id, description});
         res.status(200).json({task, status: true, msg: "Task created successfully."});
@@ -46,14 +48,14 @@ exports.putTask = async (req, res) => {
     try {
         const {description} = req.body;
         if (!description) {
-            return res.status(400).json({status: false, msg: "Task description not found."})
+            return res.status(400).json({status: false, msg: MISSING_TASK_DESC})
         }
         if (!validateObjectId(req.params.taskId)) {
             return res.status(400).json({status: false, msg: INVALID_TASK_ID});
         }
         let task = await Task.findById(req.params.taskId);
         if (task.user != req.user.id) {
-            return res.status(403).json({status: false, msg: "You can't update the task of another user."});
+            return res.status(403).json({status: false, msg: TASK_OWNED_BY_OTHER_USER});
         }
         task = await Task.findByIdAndUpdate(req.params.taskId, {description}, {new: true});
         res.status(200).json({task, status: true, msg: "Task updated successfully."});
@@ -72,7 +74,7 @@ exports.deleteTask = async (req, res) => {
             return res.status(400).json({status: false, msg: "Task with given id not found."});
         }
         if (task.user != req.user.id) {
-            return res.status(403).json({status: false, msg: "You can't delete the task of another user."});
+            return res.status(403).json({status: false, msg: TASK_OWNED_BY_OTHER_USER});
         }
         await Task.findByIdAndDelete(req.params.taskId);
         res.status(200).json({status: true, msg: "Task deleted successfully."});
