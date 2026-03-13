@@ -1,16 +1,16 @@
-const mxcheck = require("mxcheck")
-const mongoose = require("mongoose")
+import mxcheck from "mxcheck";
+import { Types } from "mongoose";
 
 const validateEmail = async (email) => {
     const result = await mxcheck(email);
-    return [result['valid'], result["suggestion"] ?? result["email"]];
+    return [result.valid, result.suggestion ?? result.email];
 }
 
 const validateObjectId = (string) => {
-    return mongoose.Types.ObjectId.isValid(string);
+    return Types.ObjectId.isValid(string);
 }
 
-module.exports = {
+export default {
     validateEmail,
     validateObjectId
 }
